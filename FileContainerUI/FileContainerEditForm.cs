@@ -9,9 +9,9 @@ namespace FileContainerUI
 {
     public partial class  FileContainerEditForm : Form
     {
-        private bool _loadSucceed = true;
-        private bool _inEditMode = false;
-        private IContainerCreator _containerCreator = new ContainerCreator();
+        private bool _loadSucceed = true; //Flag to determine if container loaded successfuly
+        private bool _isModifiedMode = false; //Flag to determine if user wants to modify(True) or create(False) new container
+        private IContainerManager _containerManager = new ContainerManager();
         private List<ContainerEntry> _files = new List<ContainerEntry>();
         private string _containerName;
 
@@ -23,14 +23,14 @@ namespace FileContainerUI
         public FileContainerEditForm(string containerName)
         {
             InitializeComponent();
-            this._inEditMode = true;
+            this._isModifiedMode = true;
             this.extractSelected.Visible = true;
             this.extractAllButton.Visible = true;
             _containerName = containerName;
 
             try
             {
-                _files = _containerCreator.GetListOfFilesFromContainer(_containerName);
+                _files = _containerManager.GetListOfFilesFromContainer(_containerName);
 
 
                 _files.ForEach(f =>
@@ -90,7 +90,7 @@ namespace FileContainerUI
                 }
 
                 this.saveButton.Enabled = true;
-                if(_inEditMode)
+                if(_isModifiedMode)
                 {
                     ExtractButtonsAreEnabled(false);
                 }
@@ -99,7 +99,7 @@ namespace FileContainerUI
 
         private void saveButton_Click(object sender, EventArgs e)
         {
-            if (!_inEditMode)
+            if (!_isModifiedMode)
             {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
 
@@ -114,9 +114,9 @@ namespace FileContainerUI
                         {
                             string fileName = saveFileDialog.FileName;
 
-                            if (!_inEditMode)
+                            if (!_isModifiedMode)
                             {
-                                success = _containerCreator.CreateContainer(fileName, _files);
+                                success = _containerManager.CreateContainer(fileName, _files);
                             }
                             
                         });
@@ -131,7 +131,7 @@ namespace FileContainerUI
                  WaiterForm waiter = new WaiterForm();
                  waiter.Show(() =>
                      {
-                         _containerCreator.AddToContainer(_containerName, _files);
+                         _containerManager.AddToContainer(_containerName, _files);
                      });
 
                  ExtractButtonsAreEnabled(true);
@@ -165,7 +165,7 @@ namespace FileContainerUI
             {
                 List<ContainerEntry> selectedFiles = new List<ContainerEntry>();
 
-                new WaiterForm().Show(() => _containerCreator.ExtractFromContainer(_containerName, folderBrowserDialog.SelectedPath, files));
+                new WaiterForm().Show(() => _containerManager.ExtractFromContainer(_containerName, folderBrowserDialog.SelectedPath, files));
             }
         }
 

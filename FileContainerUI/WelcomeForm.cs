@@ -23,8 +23,7 @@ namespace FileContainerUI
 
         private void flatButton2_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "container files (*.cntr)|*.cntr";
+            var openFileDialog = new OpenFileDialog {Filter = "container files (*.cntr)|*.cntr"};
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {

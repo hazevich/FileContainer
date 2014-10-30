@@ -3,23 +3,56 @@
 namespace FileContainer
 {
     /// <summary>
-    /// Model used to create a file container.
+    /// Entry of the file container.
     /// </summary>
     [Serializable]
     public class ContainerEntry
     {
+        /// <summary>
+        /// Name of File
+        /// </summary>
         public string Name { get; set; }
+        
+        /// <summary>
+        /// Path to File
+        /// </summary>
         public string Path { get; set; }
-        public int Size { get; set; }
+        
+        /// <summary>
+        /// Calculated property - size of File
+        /// </summary>
+        public int Size {get { return EndOffset - Offset; }}
+        
+        /// <summary>
+        /// Start index in Container
+        /// </summary>
         public int Offset { get; set; }
+        
+        /// <summary>
+        /// End index in Container
+        /// </summary>
         public int EndOffset { get; set; }
 
+        /// <summary>
+        /// Overriding Equals method according to Name property
+        /// </summary>
         public override bool Equals(object obj)
         {
-            if (this.Name == (obj as ContainerEntry).Name)
-                return true;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            
+            return obj.GetType() == this.GetType() 
+                && Equals((ContainerEntry) obj);
+        }
 
-            return false;
+        protected bool Equals(ContainerEntry other)
+        {
+            return string.Equals(Name, other.Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Name != null ? Name.GetHashCode() : 0);
         }
     }
 }
