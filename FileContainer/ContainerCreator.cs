@@ -32,8 +32,8 @@ namespace FileContainer
 
             foreach (ContainerEntry c in container.ContainerEntries)
             {
-                c.Offset += 4;
-                c.EndOffset += 4;
+                c.Offset += 4; //4 bytes are reserved by container header
+                c.EndOffset += 4; //4 bytes are reserved by container header
             }
             int header = container.ContainerEntries[container.ContainerEntries.Count - 1].EndOffset;
             using (FileStream fileStream = new FileStream(containerName, FileMode.Create))
