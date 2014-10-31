@@ -34,7 +34,7 @@ namespace FileContainer
             int header = files[files.Count - 1].EndOffset;
             using (var fileStream = new FileStream(containerName, FileMode.Create))
             {
-                fileStream.Write(BitConverter.GetBytes(header), 0, 4);
+                WriteHeader(fileStream, header);
 
                 foreach (ContainerEntry file in files)
                 {
@@ -60,10 +60,7 @@ namespace FileContainer
             var binaryFormatter = new BinaryFormatter();
             using(var fileStream = new FileStream(containerName, FileMode.Open))
             {
-                var header = new byte[4];
-                fileStream.Read(header, 0, 4);
-
-                fileStream.Position = BitConverter.ToInt32(header, 0);
+                fileStream.Position = ReadHeader(fileStream);
 
                 return binaryFormatter.Deserialize(fileStream) as List<ContainerEntry>;
             }
@@ -186,6 +183,7 @@ namespace FileContainer
             }
         }
         
+    
         private void WriteHeader(Stream stream, int footerLocation)
         {
             stream.Write(BitConverter.GetBytes(footerLocation), 0, 4);
