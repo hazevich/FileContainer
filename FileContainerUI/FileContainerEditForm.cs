@@ -149,6 +149,8 @@ namespace FileContainerUI
 
                  ExtractButtonsAreEnabled(true);
             }
+
+            saveButton.Enabled = false;
         }
 
         private void extractAllButton_Click(object sender, EventArgs e)
