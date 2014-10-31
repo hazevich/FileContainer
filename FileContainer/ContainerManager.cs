@@ -6,7 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace FileContainer
 {
     /// <summary>
-    /// Converts list of files to one container
+    /// Manages container's files
     /// </summary>
     public class ContainerManager : IContainerManager
     {
