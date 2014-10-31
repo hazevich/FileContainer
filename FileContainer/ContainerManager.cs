@@ -11,6 +11,7 @@ namespace FileContainer
     public class ContainerManager : IContainerManager
     {
         private const int MaxBufferSize = 4096;
+        private const int HeaderByteSize = 4;
 
         /// <summary>
         /// Creates new container
@@ -27,8 +28,8 @@ namespace FileContainer
 
             foreach (ContainerEntry file in files)
             {
-                file.Offset += 4; //4 bytes are reserved by container header
-                file.EndOffset += 4; //4 bytes are reserved by container header
+                file.Offset += HeaderByteSize; //4 bytes are reserved by container header
+                file.EndOffset += HeaderByteSize; //4 bytes are reserved by container header
             }
             int header = files[files.Count - 1].EndOffset;
             using (var fileStream = new FileStream(containerName, FileMode.Create))
@@ -128,6 +129,13 @@ namespace FileContainer
             }
         }
 
+        /// <summary>
+        /// Extracts file from container by chunks
+        /// </summary>
+        /// <param name="sourceStream">stream of the file</param>
+        /// <param name="containerStream">stream of the container</param>
+        /// <param name="startOffset">start offset of the file in container</param>
+        /// <param name="endOffset">end offset of the file in container</param>
         private void SaveFileByChunks(Stream sourceStream, Stream containerStream, int startOffset, int endOffset)
         {
             int remainderBuffer = (endOffset - startOffset) % MaxBufferSize;
@@ -152,6 +160,11 @@ namespace FileContainer
             }
         }
 
+        /// <summary>
+        /// Writes file to the container by chunks
+        /// </summary>
+        /// <param name="sourceStream">stream of the file</param>
+        /// <param name="containerStream">stream of the container</param>
         private void WriteByChunks(Stream sourceStream, Stream containerStream)
         {
             var fileChunk = new byte[MaxBufferSize];
@@ -172,7 +185,7 @@ namespace FileContainer
                 containerStream.Write(fileChunk, 0, fileChunk.Length);
             }
         }
-
+        
         private void WriteHeader(Stream stream, int footerLocation)
         {
             stream.Write(BitConverter.GetBytes(footerLocation), 0, 4);
