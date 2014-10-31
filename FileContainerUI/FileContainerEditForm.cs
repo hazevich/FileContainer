@@ -10,7 +10,7 @@ namespace FileContainerUI
     public partial class  FileContainerEditForm : Form
     {
         private bool _loadSucceed = true; //Flag to determine if container loaded successfuly
-        private bool _isModifiedMode = false; //Flag to determine if user wants to modify(True) or create(False) new container
+        private bool _isModifyingMode = false; //Flag to determine if user wants to modify(True) or create(False) new container
         private IContainerManager _containerManager = new ContainerManager();
         private List<ContainerEntry> _files = new List<ContainerEntry>();
         private string _containerName;
@@ -23,7 +23,7 @@ namespace FileContainerUI
         public FileContainerEditForm(string containerName)
         {
             InitializeComponent();
-            this._isModifiedMode = true;
+            this._isModifyingMode = true;
             this.extractSelected.Visible = true;
             this.extractAllButton.Visible = true;
             _containerName = containerName;
@@ -69,37 +69,50 @@ namespace FileContainerUI
                     startOffset = _files[_files.Count - 1].EndOffset;
                 }
 
+                int initialFilesCount = _files.Count;
+
                 foreach (string fileName in fileNames)
                 {
-                    ContainerEntry containerEntry = new ContainerEntry()
+                    if (fileName == _containerName)
                     {
-                        Name = fileName.Remove(0, fileName.LastIndexOf('\\') + 1),
-                        Path = fileName,
-                        Offset = startOffset
-                    };
-
-                    if (!_files.Contains(containerEntry))
+                        MessageBox.Show(string.Format("Cannot add {0} file, because it's file currently used for writing.\nPlease, choose another", _containerName));
+                    }
+                    else
                     {
-                        startOffset += (int)new FileInfo(fileName).Length;
-                        containerEntry.EndOffset = startOffset;
+                        ContainerEntry containerEntry = new ContainerEntry()
+                        {
+                            Name = fileName.Remove(0, fileName.LastIndexOf('\\') + 1),
+                            Path = fileName,
+                            Offset = startOffset
+                        };
 
-                        _files.Add(containerEntry);
+                        if (!_files.Contains(containerEntry))
+                        {
+                            startOffset += (int)new FileInfo(fileName).Length;
+                            containerEntry.EndOffset = startOffset;
 
-                        fileContainerListView.Items.Add(new ListViewItem(containerEntry.Name));
+                            _files.Add(containerEntry);
+
+                            fileContainerListView.Items.Add(new ListViewItem(containerEntry.Name));
+                        }
                     }
                 }
 
-                this.saveButton.Enabled = true;
-                if(_isModifiedMode)
+                if (_files.Count > initialFilesCount)
                 {
-                    ExtractButtonsAreEnabled(false);
+                    this.saveButton.Enabled = true;
+
+                    if (_isModifyingMode)
+                    {
+                        ExtractButtonsAreEnabled(false);
+                    }
                 }
             }
         }
 
         private void saveButton_Click(object sender, EventArgs e)
         {
-            if (!_isModifiedMode)
+            if (!_isModifyingMode)
             {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
 
@@ -114,7 +127,7 @@ namespace FileContainerUI
                         {
                             string fileName = saveFileDialog.FileName;
 
-                            if (!_isModifiedMode)
+                            if (!_isModifyingMode)
                             {
                                 success = _containerManager.CreateContainer(fileName, _files);
                             }
@@ -165,7 +178,10 @@ namespace FileContainerUI
             {
                 List<ContainerEntry> selectedFiles = new List<ContainerEntry>();
 
-                new WaiterForm().Show(() => _containerManager.ExtractFromContainer(_containerName, folderBrowserDialog.SelectedPath, files));
+                new WaiterForm()
+                    {
+                        Text = "Extracting your files from the container..."
+                    }.Show(() => _containerManager.ExtractFromContainer(_containerName, folderBrowserDialog.SelectedPath, files));
             }
         }
 

@@ -16,9 +16,21 @@ namespace FileContainerUI.Waiter
             new Thread(new ThreadStart(() =>
             {
                 job();
-                this.Invoke(new MethodInvoker(() => this.Dispose())); ;
+                this.Invoke(new MethodInvoker(() => this.Dispose()));
             })).Start();
             this.ShowDialog();
+        }
+
+        public string Text
+        {
+            get
+            {
+                return label1.Text;
+            }
+            set
+            {
+                this.label1.Text = value;
+            }
         }
     }
 }
